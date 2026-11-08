@@ -4,17 +4,38 @@ Daily 2-minute check-in for aging parents: a sit-to-stand test and a 30-second t
 
 Kin flags change; it does not diagnose. Video never leaves the device, and audio is deleted after transcription.
 
+## What's in the app
+
+| Page | Route | What it does |
+|---|---|---|
+| Check-in | `/` | Intro → stand up and sit down 5 times (camera skeleton, live count + timer, big "I stood up" button as a fallback) → talk for 30 s with a countdown → summary |
+| Family | `/dashboard` | Latest check-in with "changed from usual" flags and family summary, days checked in, trend charts with a "usual" line, recent check-ins |
+| Watch | `/watch` | Always-on mode: after a fall it asks "Are you okay?" out loud (twice) with a huge "I'm okay" button; no answer → family is called and texted. Event log |
+
+The whole UI is built for older adults: 20px base text, big high-contrast buttons, one task per screen, plain words.
+
 ## Run it
 
-**Frontend** (Person A) — http://localhost:5173
+**Frontend** — http://localhost:5173
 ```bash
 cd frontend
 npm install
 npm run dev
-npm test          # Vitest
 ```
 
-**Backend** (Person B) — http://localhost:8000
+Checks:
+```bash
+npx vitest run
+```
+```bash
+npx tsc -p .
+```
+
+The frontend works **on its own** in mock mode (the default): check-ins and Watch alerts are saved in the browser's localStorage, and the Family page shows 3 weeks of sample history plus your saved check-ins. Speech numbers are placeholders until the backend transcribes audio. To use the real backend, create `frontend/.env` with `VITE_USE_MOCK=false`; `/api/*` is proxied to port 8000. To reset demo data, clear the `kin.checkins.v1` and `kin.alerts.v1` localStorage keys.
+
+Camera and microphone need a real browser (Chrome or Edge) on `localhost`. Without a camera, the "I stood up" button still completes the test.
+
+**Backend** — http://localhost:8000
 ```bash
 cd backend
 python -m venv .venv
@@ -25,10 +46,9 @@ uvicorn app.main:app --reload
 pytest
 ```
 
-The frontend proxies `/api/*` to the backend, so run both for the full check-in flow. The dashboard currently shows seeded demo data and works without the backend.
-
 ## Status
 
-Phase 1 (MVP) in progress. Engines (sit-to-stand, speech features, baseline/flags) are built and tested; the check-in page, live dashboard data, LLM summaries, Supabase storage and Watch mode are still to wire up. The full TODO list is in `CLAUDE.md` under "Current status".
+- **Frontend UI:** done for Phase 1 and the Watch mode screens, running on mocks.
+- **In progress (team):** MediaPipe wiring (camera error handling, fall detection → `WatchPage`'s `onFall()`), backend (LLM summaries, Supabase storage, alert escalation via Twilio, auth).
 
-See `CLAUDE.md` for the brief, data contract, API and rules. Start Claude Code in the repo root.
+Full details, file ownership, the data contract and the TODO list are in `CLAUDE.md`. Start Claude Code in the repo root.

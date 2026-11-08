@@ -1,10 +1,10 @@
 # Demo script
 
-Before: start backend (`uvicorn app.main:app --reload`) and frontend (`npm run dev`), allow camera + mic, chair placed side-on to the camera with full body in frame.
+Before: `npm run dev` in `frontend/` (mock mode works without the backend). Use Chrome or Edge, allow camera + mic, chair placed side-on to the camera with the whole body in frame. Clear localStorage `kin.checkins.v1` / `kin.alerts.v1` for a clean run.
 
-1. **Family view** (`/dashboard`): 3 weeks of trends; point out the last week drifting (slower sit-to-stand, lower wpm, longer pauses). *Needs:* seeded data (done).
-2. **Live check-in** (`/`): sit-to-stand with skeleton on screen, rep counter ticking to 5, then 30s talk. *Needs:* CheckInPage flow (TODO A).
-3. **Result:** new check-in appears with a "changed vs. normal" flag and both summaries (parent's language + English). *Needs:* dashboard on `getCheckIns()` (TODO A), LLM summaries (TODO B). Flags need ≥ 6 prior check-ins for that user on the backend — seed the backend or demo with the pre-drifted history.
-4. **(Phase 4) Watch mode** (`/watch`): staged fall on a mat → "Are you okay?" voice check, no answer → family phone rings + SMS. *Needs:* WatchPage wiring (TODO A), `/alerts` escalation via Twilio (TODO B).
+1. **Family view** (`/dashboard`): latest check-in shows "Changed from usual" for sit-to-stand time and pauses; the trend charts show the last week drifting above the dashed "usual" line, with orange dots on flagged days. *Ready.*
+2. **Live check-in** (`/`): stand up and sit down with the skeleton on screen, stands counting to 5 with a timer; "I stood up" button if a stand is missed. Then the 30 s talk with the countdown. *Ready (counting depends on PoseCamera/MediaPipe on the demo machine).*
+3. **Result:** thank-you summary for the parent, then back to `/dashboard`, where the new check-in is at the top. *Ready on mocks. Real summaries need the backend LLM; real speech numbers need transcription.* Flags need ≥ 6 earlier check-ins (the seed history covers this).
+4. **Watch mode** (`/watch`): turn it on and press "Simulate a fall (demo)" → "Are you okay?" spoken twice → stay silent → "We've let Priya know". Or press "I'm okay" to show the false-alarm path. Both appear in Recent events. *UI ready. Real fall detection and the actual phone call/SMS need the team's MediaPipe + Twilio work.*
 
-Talking points: own-baseline (not population norms), two-in-a-row rule to avoid one-off noise, no video off-device, no diagnosis, family decides — never auto-dials emergency services.
+Talking points: own baseline (not population norms), two-in-a-row rule to avoid one-off noise, no video off-device, no diagnosis, family decides and it never auto-dials emergency services, big-text UI built for older adults.
