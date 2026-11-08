@@ -34,8 +34,10 @@ export function clearLocalCheckIns(): void {
 }
 
 export function familySummary(flags: CheckIn["flags"]): string {
-  if (flags.length === 0) return "Check-in completed. Everything was in line with their usual pattern.";
-  return `Check-in completed. Compared with their usual: ${flags.map((f) => describeFlag(f).toLowerCase()).join("; ")}. This has shown up two check-ins in a row, so it may be worth a gentle chat.`;
+  if (flags.length === 0) return "Today's check-in looked like their usual.";
+  const changes = flags.map((f) => describeFlag(f).toLowerCase());
+  const list = changes.length > 1 ? `${changes.slice(0, -1).join(", ")} and ${changes[changes.length - 1]}` : changes[0];
+  return `${list[0].toUpperCase()}${list.slice(1)}, two check-ins in a row. A gentle chat may help.`;
 }
 
 /** Seed history (with flags computed the same way the backend would) + this browser's saved check-ins, oldest first. */

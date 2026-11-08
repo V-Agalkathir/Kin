@@ -3,6 +3,7 @@
 // `onFall()` when it reports `fallen`. Until then, "Simulate a fall" drives the same flow.
 import { useCallback, useEffect, useRef, useState } from "react";
 import BigButton from "../components/BigButton";
+import Reveal from "../components/Reveal";
 import { sendAlert, USE_MOCK } from "../lib/api";
 import { DEMO_FAMILY_CONTACT, DEMO_USER } from "../lib/demoUser";
 import { loadAlerts, type LoggedAlert } from "../lib/mock/mockApi";
@@ -95,17 +96,16 @@ export default function WatchPage() {
   return (
     <section className="space-y-8">
       {state.name === "off" && (
-        <div className="space-y-6">
-          <h1 className="text-4xl font-bold">Watch mode</h1>
-          <p className="text-2xl leading-relaxed">
-            For a device left on in one room. If it sees a fall, it asks out loud whether you're okay.
-            If there's no answer, it calls and texts {DEMO_FAMILY_CONTACT.name}.
-          </p>
-          <ul className="space-y-2 text-xl list-disc pl-8 text-stone-700">
-            <li>Video stays on this device. Only the alert is sent.</li>
-            <li>It never calls emergency services by itself. Your family decides what to do.</li>
-          </ul>
+        <div className="space-y-8 py-6 text-center">
+          <h1 className="text-5xl font-bold">Watch mode</h1>
+          <p className="text-2xl text-stone-700">If you fall, Kin checks on you and lets {DEMO_FAMILY_CONTACT.name} know.</p>
           <BigButton onClick={() => setState({ name: "watching" })}>Turn on Watch mode</BigButton>
+          <Reveal label="How does it work?">
+            <div className="rounded-2xl bg-white p-6 shadow-sm space-y-3 text-left text-xl leading-relaxed">
+              <p>After a fall, Kin asks out loud if you're okay. If there's no answer, it calls and texts {DEMO_FAMILY_CONTACT.name}.</p>
+              <p className="text-stone-600">Video stays on this device. Kin never calls emergency services by itself; your family decides.</p>
+            </div>
+          </Reveal>
         </div>
       )}
 
@@ -172,8 +172,7 @@ export default function WatchPage() {
 
 function AlertLog({ log }: { log: LoggedAlert[] }) {
   return (
-    <div className="space-y-3">
-      <h2 className="text-2xl font-bold">Recent events</h2>
+    <Reveal label="See recent events" hideLabel="Hide recent events">
       <ul className="space-y-2">
         {[...log].reverse().slice(0, 5).map((a) => (
           <li key={a.detectedAt} className="rounded-xl bg-white p-4 shadow-sm text-xl flex flex-wrap justify-between gap-2">
@@ -184,6 +183,6 @@ function AlertLog({ log }: { log: LoggedAlert[] }) {
           </li>
         ))}
       </ul>
-    </div>
+    </Reveal>
   );
 }
