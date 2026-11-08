@@ -3,18 +3,20 @@
 @tailwind utilities;
 
 /* Large base size for older adults; Tailwind sizes are rem-based, so everything scales with it. */
-html { font-size: 20px; }
+html { font-size: 20px; color-scheme: dark; }
 body {
   @apply bg-canvas text-ink antialiased;
   line-height: 1.45;
-  font-feature-settings: "ss01", "cv11";
+  font-feature-settings: "cv11", "ss01";
   -webkit-tap-highlight-color: transparent;
 }
 
 @layer components {
-  .card { @apply bg-card rounded-card shadow-card; }
-  .large-title { @apply text-[2.1rem] leading-tight font-bold tracking-tight; }
-  .eyebrow { @apply text-base font-semibold uppercase tracking-wide text-ink-2; }
+  .card { @apply bg-card rounded-card; }
+  /* Serif display for page titles and big numbers; Inter for everything else. */
+  .large-title { @apply font-display text-[2.7rem] leading-[1.05] tracking-tight; }
+  .display-num { @apply font-display tracking-tight tabular-nums; }
+  .eyebrow { @apply text-[0.8rem] font-semibold uppercase tracking-[0.08em] text-ink-3; }
   .focus-ring { @apply focus:outline-none focus-visible:ring-4 focus-visible:ring-accent/40; }
 }
 

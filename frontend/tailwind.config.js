@@ -1,30 +1,33 @@
-// Kin design tokens — calm, Apple Health–style: grouped grey background, white cards,
-// one warm accent for actions, and a colour per health category. No gradients.
+// Kin design tokens — dark, calm, Apple Health–style: near-black canvas, raised charcoal cards,
+// one warm coral accent for actions, and a colour per health category. No gradients, no purple.
 export default {
   content: ["./index.html", "./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
       fontFamily: {
-        sans: ["-apple-system", "BlinkMacSystemFont", '"SF Pro Text"', "Inter", '"Segoe UI"', "system-ui", "sans-serif"],
+        sans: ["Inter", "-apple-system", "BlinkMacSystemFont", '"SF Pro Text"', '"Segoe UI"', "system-ui", "sans-serif"],
+        display: ['"Instrument Serif"', "Georgia", "serif"],
       },
       colors: {
-        canvas: "#F2F2F7",          // grouped background
-        card: "#FFFFFF",
-        ink: { DEFAULT: "#1C1C1E", 2: "#6C6C70", 3: "#AEAEB2" },
-        hairline: "#E5E5EA",
-        fill: "#EDEDF0",           // quiet controls, segmented track
-        accent: { DEFAULT: "#D9663F", dark: "#BF5532", soft: "#FBEAE3" }, // warm clay, primary actions
-        good: { DEFAULT: "#30A46C", soft: "#E3F5EB" },
-        notice: { DEFAULT: "#E8890C", soft: "#FDF0DC" },
-        alert: { DEFAULT: "#E5484D", soft: "#FCE8E8" },
-        // categories
-        mobility: "#F2711C",
+        canvas: "#0A0A0B",          // page
+        card: "#161618",            // raised surface
+        raised: "#222225",          // controls, selected tiles
+        ink: { DEFAULT: "#F5F5F7", 2: "#A1A1A6", 3: "#6E6E73" },
+        hairline: "#2C2C2E",
+        accent: { DEFAULT: "#FF7A4D", dark: "#F0663A", soft: "#3A1F15", ink: "#1C0D06" }, // warm coral; text on it is dark
+        good: { DEFAULT: "#32D74B", soft: "#10301A" },
+        notice: { DEFAULT: "#FFB340", soft: "#3A2A0E" },
+        alert: { DEFAULT: "#FF5A52", soft: "#3D1715" },
+        // categories (also in lib/metrics.ts + lib/vitals.ts for charts)
+        heart: "#FF5A52",
+        pressure: "#FF7AB2",
+        steps: "#FF9F0A",
+        sleep: "#64D2FF",
+        mobility: "#FFD60A",
         speech: "#0A84FF",
-        pauses: "#14A3A3",
-        watch: "#E5484D",
+        pauses: "#63E6BE",
       },
-      borderRadius: { card: "22px", control: "16px" },
-      boxShadow: { card: "0 1px 2px rgba(0,0,0,0.04)" },
+      borderRadius: { card: "24px", control: "16px" },
     },
   },
   plugins: [],

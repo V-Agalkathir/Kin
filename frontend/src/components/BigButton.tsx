@@ -3,10 +3,11 @@ import type { ButtonHTMLAttributes } from "react";
 type Variant = "primary" | "secondary" | "success";
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant };
 
+// Dark text on the bright fills keeps contrast high for older eyes.
 const LOOKS: Record<Variant, string> = {
-  primary: "bg-accent text-white hover:bg-accent-dark",
-  secondary: "bg-card text-accent shadow-card hover:bg-white/70",
-  success: "bg-good text-white hover:brightness-95",
+  primary: "bg-accent text-accent-ink hover:bg-accent-dark",
+  secondary: "bg-raised text-ink hover:bg-[#2A2A2E]",
+  success: "bg-good text-[#06200D] hover:brightness-95",
 };
 
 // Large, calm button sized for older adults (well above the 44px touch minimum).

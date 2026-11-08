@@ -14,7 +14,7 @@ export default function Reveal({ label, hideLabel = "Hide", children }: Props) {
         aria-expanded={open}
         aria-controls={id}
         onClick={() => setOpen((o) => !o)}
-        className="card w-full min-h-[3.4rem] px-5 py-4 flex items-center justify-between text-left text-xl font-medium text-ink focus-ring hover:bg-white/80"
+        className="card w-full min-h-[3.4rem] px-5 py-4 flex items-center justify-between text-left text-lg font-medium text-ink focus-ring hover:bg-raised"
       >
         <span>{open ? hideLabel : label}</span>
         <Icon name="chevron" className={`h-5 w-5 text-ink-3 transition-transform ${open ? "rotate-90" : ""}`} strokeWidth={2.5} />
