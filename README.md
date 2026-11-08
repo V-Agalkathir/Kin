@@ -8,11 +8,11 @@ Kin flags change; it does not diagnose. Video never leaves the device, and audio
 
 | Page | Route | What it does |
 |---|---|---|
-| Check-in | `/` | Intro → stand up and sit down 5 times (camera skeleton, live count + timer, big "I stood up" button as a fallback) → talk for 30 s with a countdown → summary |
-| Family | `/dashboard` | Latest check-in with "changed from usual" flags and family summary, days checked in, trend charts with a "usual" line, recent check-ins |
-| Watch | `/watch` | Always-on mode: after a fall it asks "Are you okay?" out loud (twice) with a huge "I'm okay" button; no answer → family is called and texted. Event log |
+| Check-in | `/` | Start → stand up and sit down 5 times (camera, big count, "I stood up" fallback button) → talk for 30 s with a countdown → "All done — thank you!" |
+| Family | `/dashboard` | One status card: "Amma is doing well" or "Something has changed", with a one-line summary. Trends and past check-ins open on request |
+| Watch | `/watch` | Always-on mode: after a fall it asks "Are you okay?" out loud (twice) with a huge "I'm okay" button; no answer → family is called and texted |
 
-The whole UI is built for older adults: 20px base text, big high-contrast buttons, one task per screen, plain words.
+The UI is deliberately quiet: each screen shows one headline, one sentence and one main action. Numbers, charts, history and explanations stay hidden until someone taps "See trends", "See my results", "How does it work?" and so on. Built for older adults: 20px base text, big high-contrast buttons, plain words.
 
 ## Run it
 
