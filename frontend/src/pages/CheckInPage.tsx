@@ -5,13 +5,14 @@ import Icon from "../components/Icon";
 import PoseCamera from "../components/PoseCamera";
 import Reveal from "../components/Reveal";
 import Ring from "../components/Ring";
-import { submitCheckIn } from "../lib/api";
+import { getCareReport, getVitals, submitCheckIn } from "../lib/api";
 import { DEMO_USER } from "../lib/demoUser";
 import { METRIC_INFO } from "../lib/metrics";
 import { kneeAngleDeg } from "../lib/pose/geometry";
 import { initialStsState, stepSts, stsSeconds, tapRep, TARGET_REPS, type StsState } from "../lib/pose/sitToStand";
 import { recordAudio } from "../lib/speech/recorder";
 import type { CheckIn } from "../types/checkin";
+import type { CareReport, DailyVitals } from "../types/health";
 
 const TALK_SECONDS = 30;
 const MOBILITY = METRIC_INFO.sitToStandSec.color;
@@ -83,7 +84,7 @@ function Intro({ onStart }: { onStart: () => void }) {
     <div className="space-y-7">
       <header>
         <p className="eyebrow">{new Date().toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" })}</p>
-        <h1 className="large-title">{greeting()}, {DEMO_USER.name}</h1>
+        <h1 className="large-title">{greeting()}, {DEMO_USER.firstName}</h1>
       </header>
 
       <article className="card p-6 space-y-5">
@@ -94,14 +95,48 @@ function Intro({ onStart }: { onStart: () => void }) {
         <BigButton onClick={onStart}>Start</BigButton>
       </article>
 
+      <StepGoal />
+
       <Reveal label="How does it work?">
         <ul className="card overflow-hidden">
           <InfoRow icon="stand" color={MOBILITY} title={`Stand up ${TARGET_REPS} times`} text="From a sturdy chair without wheels." />
           <InfoRow icon="speech" color={SPEECH} title={`Talk for ${TALK_SECONDS} seconds`} text="About anything you like." divider />
-          <InfoRow icon="shield" color="#30A46C" title="Private" text="The video stays on this device." divider />
+          <InfoRow icon="shield" color="#32D74B" title="Private" text="The video stays on this device." divider />
         </ul>
       </Reveal>
     </div>
+  );
+}
+
+/** The parent's own goal from the doctor's report, with today's progress from the watch. */
+function StepGoal() {
+  const [goal, setGoal] = useState<{ care: CareReport; today: DailyVitals } | null>(null);
+  useEffect(() => {
+    Promise.all([getCareReport(DEMO_USER.id), getVitals(DEMO_USER.id)])
+      .then(([care, vitals]) => setGoal({ care, today: vitals[vitals.length - 1] }))
+      .catch(() => {});
+  }, []);
+  const rec = goal?.care.recommendations.find((r) => r.track?.kind === "stepsPerDay");
+  if (!goal || !rec || rec.track?.kind !== "stepsPerDay") return null;
+  const target = rec.track.target;
+  const pct = Math.min(1, goal.today.steps / target);
+  return (
+    <article className="card p-5 space-y-3">
+      <div className="flex items-center justify-between">
+        <span className="inline-flex items-center gap-2 text-[0.9rem] font-semibold text-steps">
+          <Icon name="steps" className="h-[1.1rem] w-[1.1rem]" strokeWidth={2.4} /> Today's walk
+        </span>
+        <span className="text-sm text-ink-3">Goal from {goal.care.doctor}</span>
+      </div>
+      <p className="leading-none">
+        <span className="display-num text-[2.4rem]">{goal.today.steps.toLocaleString()}</span>
+        <span className="ml-1.5 text-lg text-ink-2">of {target.toLocaleString()} steps</span>
+      </p>
+      <div className="h-2.5 rounded-full bg-raised overflow-hidden" role="progressbar" aria-valuemin={0} aria-valuemax={target} aria-valuenow={goal.today.steps}>
+        <div className="h-full rounded-full bg-steps" style={{ width: `${pct * 100}%` }} />
+      </div>
+      <p className="text-base text-ink-2">{pct >= 1 ? "Goal reached today. Well done!" : "A short walk later would help you get there."}</p>
+    </article>
   );
 }
 
@@ -172,7 +207,7 @@ function StandStep({ onDone }: { onDone: (sitToStandSec: number, reps: number) =
       </div>
 
       <div className="card p-6 space-y-6">
-        <Ring progress={view.reps / TARGET_REPS} color={finished ? "#30A46C" : MOBILITY} size={200} stroke={20}>
+        <Ring progress={view.reps / TARGET_REPS} color={finished ? "#32D74B" : MOBILITY} size={200} stroke={20}>
           <div aria-live="polite">
             <div className="text-6xl font-bold tracking-tight tabular-nums">{view.reps}</div>
             <div className="text-lg text-ink-2">of {TARGET_REPS} stands</div>
@@ -186,7 +221,7 @@ function StandStep({ onDone }: { onDone: (sitToStandSec: number, reps: number) =
           </div>
         ) : (
           <div className="space-y-2">
-            <BigButton variant="secondary" className="!bg-accent-soft !shadow-none text-2xl min-h-[4.5rem]" onClick={onTap}>I stood up</BigButton>
+            <BigButton variant="secondary" className="!bg-accent-soft !text-accent text-2xl min-h-[4.5rem]" onClick={onTap}>I stood up</BigButton>
             <p className="text-center text-base text-ink-3">Tap if a stand isn't counted.</p>
           </div>
         )}

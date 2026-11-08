@@ -20,7 +20,7 @@ export function seedHistory(userId = "demo-parent"): CheckIn[] {
       id: `seed-${i}`, userId, createdAt: d.toISOString(),
       sitToStandSec: +(11 + random() * 1.2 + drift).toFixed(1), repsDetected: 5,
       wpm: Math.round(128 + random() * 10 - drift * 3), avgPauseMs: Math.round(450 + random() * 80 + drift * 40),
-      wordCount: 60, transcript: "", language: "ta", flags: [], summaryParent: "", summaryFamily: "",
+      wordCount: 60, transcript: "", language: "en", flags: [], summaryParent: "", summaryFamily: "",
     };
   });
 }

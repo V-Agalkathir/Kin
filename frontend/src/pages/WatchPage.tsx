@@ -105,14 +105,14 @@ export default function WatchPage() {
           <article className="card p-6 space-y-5">
             <div className="flex items-start gap-4">
               <IconTile name="shield" color="#E5484D" />
-              <p className="text-xl leading-relaxed text-ink-2">If you fall, Kin checks on you and lets {DEMO_FAMILY_CONTACT.name} know.</p>
+              <p className="text-xl leading-relaxed text-ink-2">If you fall, kin checks on you and lets {DEMO_FAMILY_CONTACT.name} know.</p>
             </div>
             <BigButton onClick={() => setState({ name: "watching" })}>Turn on</BigButton>
           </article>
           <Reveal label="How does it work?">
             <div className="card p-5 space-y-3 text-lg leading-relaxed">
-              <p>After a fall, Kin asks out loud if you're okay. If there's no answer, it calls and texts {DEMO_FAMILY_CONTACT.name}.</p>
-              <p className="text-ink-2">Video stays on this device. Kin never calls emergency services by itself; your family decides.</p>
+              <p>After a fall, kin asks out loud if you're okay. If there's no answer, it calls and texts {DEMO_FAMILY_CONTACT.name}.</p>
+              <p className="text-ink-2">Video stays on this device. kin never calls emergency services by itself; your family decides.</p>
             </div>
           </Reveal>
         </div>
@@ -126,7 +126,7 @@ export default function WatchPage() {
               <Icon name="shield" className="relative h-11 w-11" />
             </span>
             <h1 className="large-title">Watching</h1>
-            <p className="text-xl text-ink-2">If you fall, Kin will ask if you're okay.</p>
+            <p className="text-xl text-ink-2">If you fall, kin will ask if you're okay.</p>
           </div>
           <BigButton variant="secondary" onClick={onFall}>Simulate a fall (demo)</BigButton>
           <button type="button" onClick={turnOff} className="mx-auto block rounded-lg px-4 py-2 text-lg font-medium text-accent focus-ring">

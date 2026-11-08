@@ -8,9 +8,9 @@ export type MetricInfo = {
 
 // Colours match the category tokens in tailwind.config.js.
 export const METRIC_INFO: Record<string, MetricInfo> = {
-  sitToStandSec: { label: "Sit-to-stand", unit: "seconds", shortUnit: "sec", up: "took longer than usual", down: "was quicker than usual", icon: "stand", color: "#F2711C", decimals: 1 },
+  sitToStandSec: { label: "Sit-to-stand", unit: "seconds", shortUnit: "sec", up: "took longer than usual", down: "was quicker than usual", icon: "stand", color: "#FFD60A", decimals: 1 },
   wpm: { label: "Speaking pace", unit: "words per minute", shortUnit: "wpm", up: "was faster than usual", down: "was slower than usual", icon: "speech", color: "#0A84FF", decimals: 0 },
-  avgPauseMs: { label: "Pauses", unit: "milliseconds", shortUnit: "ms", up: "were longer than usual", down: "were shorter than usual", icon: "pause", color: "#14A3A3", decimals: 0 },
+  avgPauseMs: { label: "Pauses", unit: "milliseconds", shortUnit: "ms", up: "were longer than usual", down: "were shorter than usual", icon: "pause", color: "#63E6BE", decimals: 0 },
 };
 
 export function describeFlag(f: Flag): string {

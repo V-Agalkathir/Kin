@@ -1,4 +1,7 @@
 import type { CheckIn, FallAlert } from "../types/checkin";
+import type { CareReport, DailyVitals } from "../types/health";
+import { mockCareReport } from "./mock/careplan";
+import { mockVitals } from "./mock/wearable";
 import { mockGetCheckIns, mockSendAlert, mockSubmitCheckIn } from "./mock/mockApi";
 
 /** Phase 1: use the local mock until the backend is ready. Set VITE_USE_MOCK=false to hit /api. */
@@ -29,4 +32,14 @@ export async function sendAlert(alert: FallAlert): Promise<{ logged: boolean; es
   const res = await fetch("/api/alerts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(alert) });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
+}
+
+// Wearable vitals and the doctor's care plan have no backend endpoint yet — always mocked for now.
+// TODO(backend): vitals sync from a health platform; care-plan extraction from the uploaded report.
+export async function getVitals(_userId: string): Promise<DailyVitals[]> {
+  return mockVitals();
+}
+
+export async function getCareReport(_userId: string): Promise<CareReport> {
+  return mockCareReport();
 }
