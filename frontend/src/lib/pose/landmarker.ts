@@ -19,5 +19,5 @@ export async function getPoseLandmarker(): Promise<PoseLandmarker> {
   return instance;
 }
 
-// MediaPipe landmark indices
-export const LM = { L_SHOULDER: 11, R_SHOULDER: 12, L_HIP: 23, R_HIP: 24, L_KNEE: 25, R_KNEE: 26, L_ANKLE: 27, R_ANKLE: 28 };
+// Landmark indices live in geometry.ts so pure code can use them without loading MediaPipe.
+export { LM } from "./geometry";
