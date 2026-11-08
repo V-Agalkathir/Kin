@@ -1,5 +1,5 @@
 import type { CheckIn, FallAlert } from "../types/checkin";
-import { mockGetCheckIns, mockSubmitCheckIn } from "./mock/mockApi";
+import { mockGetCheckIns, mockSendAlert, mockSubmitCheckIn } from "./mock/mockApi";
 
 /** Phase 1: use the local mock until the backend is ready. Set VITE_USE_MOCK=false to hit /api. */
 export const USE_MOCK = import.meta.env.VITE_USE_MOCK !== "false";
@@ -24,6 +24,9 @@ export async function getCheckIns(userId: string): Promise<CheckIn[]> {
   return res.json();
 }
 
-export async function sendAlert(alert: FallAlert): Promise<void> {
-  await fetch("/api/alerts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(alert) });
+export async function sendAlert(alert: FallAlert): Promise<{ logged: boolean; escalated: boolean }> {
+  if (USE_MOCK) return mockSendAlert(alert);
+  const res = await fetch("/api/alerts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(alert) });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
 }

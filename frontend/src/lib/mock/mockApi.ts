@@ -1,6 +1,6 @@
 // MOCK ONLY — stands in for the backend until it's ready (VITE_USE_MOCK, default on).
 // Check-ins are saved to this browser's localStorage. Audio is discarded, never stored.
-import type { CheckIn } from "../../types/checkin";
+import type { CheckIn, FallAlert } from "../../types/checkin";
 import { describeFlag } from "../metrics";
 import { seedHistory } from "../seed";
 import { computeFlags } from "./baseline";
@@ -75,4 +75,27 @@ export async function mockSubmitCheckIn(
   };
   writeAll([...readAll(), checkIn]);
   return checkIn;
+}
+
+// ---- Watch mode alerts ----
+// Every alert is logged, including false alarms, so detection can be tuned (same as the backend).
+const ALERTS_KEY = "kin.alerts.v1";
+export type LoggedAlert = FallAlert & { escalated: boolean };
+
+export function loadAlerts(userId: string): LoggedAlert[] {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(ALERTS_KEY) ?? "[]");
+    return Array.isArray(parsed) ? parsed.filter((a: LoggedAlert) => a.userId === userId) : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function mockSendAlert(alert: FallAlert): Promise<{ logged: boolean; escalated: boolean }> {
+  const escalated = !alert.respondedOk; // backend would call + text the family alert contact here
+  try {
+    const all = JSON.parse(localStorage.getItem(ALERTS_KEY) ?? "[]");
+    localStorage.setItem(ALERTS_KEY, JSON.stringify([...(Array.isArray(all) ? all : []), { ...alert, escalated }]));
+  } catch { /* storage blocked */ }
+  return { logged: true, escalated };
 }
