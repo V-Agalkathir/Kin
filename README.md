@@ -12,7 +12,7 @@ Kin flags change; it does not diagnose. Video never leaves the device, and audio
 | Family | `/dashboard` | One status card: "Amma is doing well" or "Something has changed", with a one-line summary. Trends and past check-ins open on request |
 | Watch | `/watch` | Always-on mode: after a fall it asks "Are you okay?" out loud (twice) with a huge "I'm okay" button; no answer → family is called and texted |
 
-The UI is deliberately quiet: each screen shows one headline, one sentence and one main action. Numbers, charts, history and explanations stay hidden until someone taps "See trends", "See my results", "How does it work?" and so on. Built for older adults: 20px base text, big high-contrast buttons, plain words.
+The look is calm and minimal, in the style of Apple Health: light grey background, white rounded cards, one warm clay accent for buttons, a colour per category (mobility orange, speech blue, pauses teal) and progress rings. The UI is deliberately quiet: each screen shows one headline, one sentence and one main action. Numbers, charts, history and explanations stay hidden until someone taps "See trends", "See my results", "How does it work?" and so on. Built for older adults: 20px base text, big high-contrast buttons, plain words.
 
 ## Run it
 

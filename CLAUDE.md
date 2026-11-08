@@ -87,17 +87,32 @@ Frontend calls `/api/*`; Vite proxies to `http://localhost:8000` and strips `/ap
 - **Summaries:** LLM gets only numbers + flags, never audio/transcript. Calm, no medical terms; doctor only for sustained changes. Mock uses fixed templates.
 - **Fall detection** (`lib/watch/fallDetector.ts`): hip drop > 1.2 image-heights/s with torso > 60° from vertical starts a timer; fallen after 10 s without torso < 30°. Untuned, not wired to a camera yet.
 
+## Visual design
+Calm, minimal, **Apple Health–style**: grouped light-grey background, white rounded cards, big bold titles, coloured category icons, lots of space. Warm and friendly, not techy.
+
+- **Tokens** live in `frontend/tailwind.config.js`. Use them; don't hard-code new hex colours in components.
+  - Surfaces: `canvas` #F2F2F7 page, `card` white, `hairline` dividers, `fill` quiet controls.
+  - Text: `ink` #1C1C1E, `ink-2` secondary, `ink-3` tertiary.
+  - `accent` #D9663F (warm clay): the **only** colour for primary actions, active tabs, links.
+  - Status: `good` green, `notice` orange, `alert` red, each with a `-soft` tint for icon circles.
+  - Categories (icons, charts, rings): `mobility` orange, `speech` blue, `pauses` teal, `watch` red. Hex values are also in `lib/metrics.ts` for Recharts.
+- **Don't:** gradients, purple/indigo, dark/black themes, neon, glassy "AI" looks, heavy shadows, borders around cards.
+- **Type:** system font (SF on Apple devices), with Inter as the fallback from Google Fonts in `index.html`. 20px base. Classes `.large-title` (page title), `.eyebrow` (small uppercase date/section above the title).
+- **Building blocks** (`index.css` + components): `.card` (white, 22px radius, faint shadow), `.focus-ring`, `BigButton` (primary clay / secondary white / success green, 16px radius), `Reveal` (list row with chevron), `Ring` (activity-style progress ring), `Icon` + `CategoryLabel` (stroke icons; coloured icon + label like Health headers). Lists are one card with inset hairline dividers.
+- **Layout:** single column, max width `2xl`. Bottom tab bar (icons + labels) under 640px; segmented control in the top bar above that.
+- **Charts:** Health-style rounded bars in the category colour, 35% opacity normally and solid for flagged check-ins, dashed grey "usual" line, light axis labels on the right, no grid.
+
 ## Frontend UI (built)
 **Design principle: summary first, details only on request.** Each screen shows one headline, one short sentence and one main action. Anything more (numbers, charts, history, explanations) sits behind a `Reveal` toggle ("See trends", "See my results", "How does it work?"). Don't add always-visible stats, metric tiles or extra explanatory text; put new detail behind a `Reveal`.
 
-- **App shell** (`App.tsx`): nav (Check-in `/`, Family `/dashboard`, Watch `/watch`), skip link, 404.
+- **App shell** (`App.tsx`): sticky translucent top bar with the Kin mark; nav (Check-in `/`, Family `/dashboard`, Watch `/watch`) as a segmented control on wide screens and a bottom tab bar on phones; skip link; 404.
 - **Check-in** (`pages/CheckInPage.tsx`):
   - Intro: greeting, "about 2 minutes", Start. *Reveal:* how it works and chair/privacy tips.
-  - Step 1 of 2, sit-to-stand: PoseCamera, a big "x of 5" count (time is measured but not shown), "I stood up" fallback button, legs-not-visible hint, "start this step again".
-  - Step 2 of 2, talk: one-line prompt, then a large 30 s countdown. Mic-error retry.
+  - Step 1 of 2, sit-to-stand: PoseCamera, an orange progress ring with "x of 5 stands" (turns green when done; time is measured but not shown), "I stood up" fallback button, legs-not-visible hint, "start this step again".
+  - Step 2 of 2, talk: one-line prompt, mic icon in a blue ring that fills during the 30 s countdown. Mic-error retry.
   - Saving → done: tick, "All done — thank you!", `summaryParent`, Finish. *Reveal:* "See my results" (stands + time, words spoken).
   - Error screen with retry if submit fails.
-- **Family** (`pages/DashboardPage.tsx`): one status card: "{name} is doing well" or "Something has changed for {name}", the latest `summaryFamily`, and "Last check-in today/yesterday/…". *Reveals:* "See trends" (one chart per metric with a dashed "usual" line, which is the median of the previous 14, and orange dots on flagged check-ins) and "See past check-ins" (last 7, Usual/Changed with plain-language flags). Small "Demo data" note in mock mode.
+- **Family** (`pages/DashboardPage.tsx`): date eyebrow + "Summary" title, then one highlight card: the parent's name with a coloured heart, "Today/Yesterday", "Doing well" or "Something has changed", and the latest `summaryFamily`. *Reveals:* "Show trends" (a card per metric with the latest value, "usual", and a two-week bar chart; "usual" is the median of the previous 14) and "Show past check-ins" (last 7, Usual/Changed with plain-language flags). Small "Demo data" note in mock mode.
 - **Watch** (`pages/WatchPage.tsx`): intro line + "Turn on Watch mode". *Reveal:* how it works and privacy. Then watching → "Are you okay?" (spoken prompt + huge green "I'm okay" button, asked twice, each ask always waits the full 20 s unless an answer is heard) → okay, or "contacting family" → alerted ("couldn't reach" on failure). *Reveal:* "See recent events". **"Simulate a fall (demo)" stands in for detection**; the hook point is `onFall()` (TODO at top of file).
 - **Accessibility:** base font 20px (all Tailwind rem sizes scale), `BigButton` (min 80px tall, variants primary/secondary/success, amber focus ring), `Reveal` toggles with `aria-expanded`, large nav targets, `aria-live` on counters, reduced-motion respected, no colour-only status.
 - **Shared bits:** `components/BigButton.tsx`, `components/Reveal.tsx`, `lib/metrics.ts` (plain-language metric labels + `describeFlag`), `lib/demoUser.ts`.
@@ -136,7 +151,8 @@ Env: frontend `VITE_USE_MOCK` (default true), `VITE_SUPABASE_*` reserved for aut
 - `frontend/src/types/checkin.ts` — shared contract
 - `frontend/src/App.tsx`, `main.tsx`, `index.css` — shell, routing, global styles
 - `frontend/src/pages/` — `CheckInPage`, `DashboardPage`, `WatchPage`
-- `frontend/src/components/` — `BigButton`, `Reveal`, `PoseCamera` (team-owned)
+- `frontend/src/components/` — `BigButton`, `Reveal`, `Ring`, `Icon` (+ `CategoryLabel`), `PoseCamera` (team-owned)
+- `frontend/tailwind.config.js` — design tokens (colours, radii, font)
 - `frontend/src/lib/api.ts` — API client with mock switch
 - `frontend/src/lib/mock/` — `mockApi.ts` (localStorage check-ins + alerts), `baseline.ts` (+ test)
 - `frontend/src/lib/pose/` — `geometry.ts` (+ test), `sitToStand.ts` (+ test), `landmarker.ts` (team-owned)
@@ -153,6 +169,7 @@ Env: frontend `VITE_USE_MOCK` (default true), `VITE_SUPABASE_*` reserved for aut
 - Keep detection/engine code pure (no camera, network, DB) so it's unit-testable; I/O lives in components, pages, routes, services.
 - Unit-test anything that computes: sit-to-stand, fall detection, baseline/flag math.
 - Older adults first: large text, `BigButton` for actions, plain words, one task per screen, text alongside colour.
+- Keep the Apple Health–style look in "Visual design": use the tokens and building blocks, with clay as the only action colour; no gradients, purple or dark themes.
 - Summary first: show the headline and one sentence; numbers, charts, history and explanations go behind a `Reveal` so they appear only when the person asks.
 - Never send video off-device; never store raw audio; never send audio or transcripts to the LLM.
 - No diagnostic language anywhere in UI, summaries or prompts. Never auto-dial emergency services.
