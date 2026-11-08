@@ -1,22 +1,22 @@
-# Kin
+# kin
 
-Daily 2-minute check-in for aging parents: a sit-to-stand test and a 30-second talk, compared against their own baseline. Family get a plain-language "changed vs. normal" summary. Watch mode adds fall detection with a voice check and caregiver alert.
+A personal health companion for an aging parent who lives far from family. kin combines a daily 2-minute check-in (sit-to-stand test + 30-second talk), watch-style health data (resting heart rate, blood pressure, steps, sleep) and the care plan from the parent's doctor. It compares everything with the parent's *own* usual and gives the family a plain-language report of what changed and what's steady.
 
-Kin flags change; it does not diagnose. Video never leaves the device, and audio is deleted after transcription.
+kin flags change; it does not diagnose, and it never writes medical advice: care-plan items are the doctor's own words. Video never leaves the device, and audio is deleted after transcription.
 
 ## What's in the app
 
-| Page | Route | What it does |
-|---|---|---|
-| Check-in | `/` | Start → stand up and sit down 5 times (camera, big count, "I stood up" fallback button) → talk for 30 s with a countdown → "All done — thank you!" |
-| Family | `/dashboard` | One status card: "Amma is doing well" or "Something has changed", with a one-line summary. Trends and past check-ins open on request |
-| Watch | `/watch` | Always-on mode: after a fall it asks "Are you okay?" out loud (twice) with a huge "I'm okay" button; no answer → family is called and texted |
+| Page | Route | For | What it shows |
+|---|---|---|---|
+| Check-in | `/` | Parent | Greeting, "Today's check-in" with Start, today's walk vs the doctor's step goal → stand up 5 times (camera, progress ring, "I stood up" fallback) → talk for 30 s → "All done" |
+| Family | `/dashboard` | Family | **Health report**: profile card (age, city, distance, local time, one-tap call), today's summary of what changed, vitals and check-in tiles that open two-week charts, and the doctor's care plan with new items and progress |
+| Watch | `/watch` | Parent's device | After a fall it asks "Are you okay?" out loud (twice) with a huge "I'm okay" button; no answer → family is called and texted |
 
-The look is calm and minimal, in the style of Apple Health: light grey background, white rounded cards, one warm clay accent for buttons, a colour per category (mobility orange, speech blue, pauses teal) and progress rings. The UI is deliberately quiet: each screen shows one headline, one sentence and one main action. Numbers, charts, history and explanations stay hidden until someone taps "See trends", "See my results", "How does it work?" and so on. Built for older adults: 20px base text, big high-contrast buttons, plain words.
+**Look:** dark and calm, like Apple Health's dark mode. Near-black background, charcoal cards, a single warm coral accent, a colour per category, serif titles and numbers (Instrument Serif) with Inter for text. Built for older adults: 20px base text, big buttons, plain words.
 
 ## Run it
 
-**Frontend** — http://localhost:5173
+**Frontend** at http://localhost:5173
 ```bash
 cd frontend
 npm install
@@ -31,11 +31,16 @@ npx vitest run
 npx tsc -p .
 ```
 
-The frontend works **on its own** in mock mode (the default): check-ins and Watch alerts are saved in the browser's localStorage, and the Family page shows 3 weeks of sample history plus your saved check-ins. Speech numbers are placeholders until the backend transcribes audio. To use the real backend, create `frontend/.env` with `VITE_USE_MOCK=false`; `/api/*` is proxied to port 8000. To reset demo data, clear the `kin.checkins.v1` and `kin.alerts.v1` localStorage keys.
+The frontend works **on its own** in mock mode (the default):
+- **Check-ins** and Watch alerts are saved in the browser's localStorage; the Family page adds 3 weeks of sample history.
+- **Watch readings** (heart rate, blood pressure, steps, sleep) and the **doctor's care plan** are simulated. A web app can't read Apple Health directly; real data will need a phone companion app or a health-platform sync on the backend.
+- **Demo people:** Margaret Ellis ("Mom", 78, Portland) and her son Daniel. The phone number is a fictional 555 number.
+
+To use the real backend for check-ins, create `frontend/.env` with `VITE_USE_MOCK=false`; `/api/*` is proxied to port 8000. To reset demo data, clear the `kin.checkins.v1` and `kin.alerts.v1` localStorage keys.
 
 Camera and microphone need a real browser (Chrome or Edge) on `localhost`. Without a camera, the "I stood up" button still completes the test.
 
-**Backend** — http://localhost:8000
+**Backend** at http://localhost:8000
 ```bash
 cd backend
 python -m venv .venv
@@ -48,7 +53,7 @@ pytest
 
 ## Status
 
-- **Frontend UI:** done for Phase 1 and the Watch mode screens, running on mocks.
-- **In progress (team):** MediaPipe wiring (camera error handling, fall detection → `WatchPage`'s `onFall()`), backend (LLM summaries, Supabase storage, alert escalation via Twilio, auth).
+- **Frontend UI:** check-in, health report with vitals and care plan, and Watch mode, all running on mocks.
+- **In progress (team):** MediaPipe wiring, backend (LLM summaries, Supabase, Twilio alerts, auth), wearable sync, and doctor's-report ingestion.
 
 Full details, file ownership, the data contract and the TODO list are in `CLAUDE.md`. Start Claude Code in the repo root.
