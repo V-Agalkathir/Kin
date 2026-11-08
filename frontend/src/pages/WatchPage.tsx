@@ -3,6 +3,7 @@
 // `onFall()` when it reports `fallen`. Until then, "Simulate a fall" drives the same flow.
 import { useCallback, useEffect, useRef, useState } from "react";
 import BigButton from "../components/BigButton";
+import Icon from "../components/Icon";
 import Reveal from "../components/Reveal";
 import { sendAlert, USE_MOCK } from "../lib/api";
 import { DEMO_FAMILY_CONTACT, DEMO_USER } from "../lib/demoUser";
@@ -94,16 +95,24 @@ export default function WatchPage() {
   useEffect(() => () => { run.current++; speechSynthesis.cancel(); }, []);
 
   return (
-    <section className="space-y-8">
+    <section className="space-y-7">
       {state.name === "off" && (
-        <div className="space-y-8 py-6 text-center">
-          <h1 className="text-5xl font-bold">Watch mode</h1>
-          <p className="text-2xl text-stone-700">If you fall, Kin checks on you and lets {DEMO_FAMILY_CONTACT.name} know.</p>
-          <BigButton onClick={() => setState({ name: "watching" })}>Turn on Watch mode</BigButton>
+        <div className="space-y-7">
+          <header>
+            <p className="eyebrow">Fall safety</p>
+            <h1 className="large-title">Watch mode</h1>
+          </header>
+          <article className="card p-6 space-y-5">
+            <div className="flex items-start gap-4">
+              <IconTile name="shield" color="#E5484D" />
+              <p className="text-xl leading-relaxed text-ink-2">If you fall, Kin checks on you and lets {DEMO_FAMILY_CONTACT.name} know.</p>
+            </div>
+            <BigButton onClick={() => setState({ name: "watching" })}>Turn on</BigButton>
+          </article>
           <Reveal label="How does it work?">
-            <div className="rounded-2xl bg-white p-6 shadow-sm space-y-3 text-left text-xl leading-relaxed">
+            <div className="card p-5 space-y-3 text-lg leading-relaxed">
               <p>After a fall, Kin asks out loud if you're okay. If there's no answer, it calls and texts {DEMO_FAMILY_CONTACT.name}.</p>
-              <p className="text-stone-600">Video stays on this device. Kin never calls emergency services by itself; your family decides.</p>
+              <p className="text-ink-2">Video stays on this device. Kin never calls emergency services by itself; your family decides.</p>
             </div>
           </Reveal>
         </div>
@@ -111,58 +120,53 @@ export default function WatchPage() {
 
       {state.name === "watching" && (
         <div className="space-y-6">
-          <div className="rounded-2xl bg-emerald-50 border-4 border-emerald-600 p-8 text-center space-y-3" role="status">
-            <div className="flex items-center justify-center gap-3 text-3xl font-bold text-emerald-900">
-              <span className="h-5 w-5 rounded-full bg-emerald-600 animate-pulse" aria-hidden /> Watching
-            </div>
-            <p className="text-2xl">If you fall, Kin will ask if you're okay.</p>
+          <div className="card p-8 text-center space-y-4" role="status">
+            <span className="relative mx-auto grid h-24 w-24 place-items-center rounded-full bg-good-soft text-good">
+              <span className="absolute inset-0 rounded-full bg-good/20 animate-ping [animation-duration:2.4s]" aria-hidden />
+              <Icon name="shield" className="relative h-11 w-11" />
+            </span>
+            <h1 className="large-title">Watching</h1>
+            <p className="text-xl text-ink-2">If you fall, Kin will ask if you're okay.</p>
           </div>
           <BigButton variant="secondary" onClick={onFall}>Simulate a fall (demo)</BigButton>
-          <BigButton variant="secondary" onClick={turnOff}>Turn off Watch mode</BigButton>
+          <button type="button" onClick={turnOff} className="mx-auto block rounded-lg px-4 py-2 text-lg font-medium text-accent focus-ring">
+            Turn off Watch mode
+          </button>
         </div>
       )}
 
       {state.name === "checking" && (
-        <div className="space-y-8 text-center" role="alertdialog" aria-labelledby="ask">
-          <h1 id="ask" className="text-6xl font-bold">Are you okay?</h1>
-          <p className="text-3xl">Say <strong>"I'm okay"</strong> or press the button.</p>
-          <BigButton variant="success" className="min-h-40 text-5xl" onClick={pressedOkay}>I'm okay</BigButton>
-          <p className="text-xl text-stone-600" aria-live="polite">
-            {canListen ? "Listening…" : "Waiting…"} (asking {state.attempt} of {ATTEMPTS}). If there's no answer we'll contact {DEMO_FAMILY_CONTACT.name}.
+        <div className="card p-8 space-y-7 text-center" role="alertdialog" aria-labelledby="ask">
+          <h1 id="ask" className="text-5xl font-bold tracking-tight">Are you okay?</h1>
+          <p className="text-2xl text-ink-2">Say "I'm okay" or tap the button.</p>
+          <BigButton variant="success" className="min-h-[9rem] text-5xl rounded-card" onClick={pressedOkay}>I'm okay</BigButton>
+          <p className="text-lg text-ink-3" aria-live="polite">
+            {canListen ? "Listening" : "Waiting"} · asking {state.attempt} of {ATTEMPTS}
           </p>
         </div>
       )}
 
       {state.name === "alerting" && (
-        <p className="py-12 text-center text-4xl font-bold" role="status">Contacting {DEMO_FAMILY_CONTACT.name}…</p>
+        <Status icon="bell" tone="notice" title={`Contacting ${DEMO_FAMILY_CONTACT.name}…`} />
       )}
 
       {state.name === "ok" && (
-        <div className="space-y-6 text-center">
-          <h1 className="text-4xl font-bold">Glad you're okay</h1>
-          <p className="text-2xl">We won't contact anyone. Take your time getting up.</p>
+        <Status icon="check" tone="good" title="Glad you're okay" body="We won't contact anyone. Take your time getting up.">
           <BigButton onClick={() => setState({ name: "watching" })}>Keep watching</BigButton>
-        </div>
+        </Status>
       )}
 
       {state.name === "alerted" && (
-        <div className="space-y-6 text-center">
-          {state.failed ? (
-            <>
-              <h1 className="text-4xl font-bold text-red-800">We couldn't reach {DEMO_FAMILY_CONTACT.name}</h1>
-              <p className="text-2xl">Please call someone for help if you can.</p>
-            </>
-          ) : (
-            <>
-              <h1 className="text-4xl font-bold">We've let {DEMO_FAMILY_CONTACT.name} know</h1>
-              <p className="text-2xl">
-                They're getting a call and a text message{USE_MOCK && " (demo: nothing was actually sent)"}.
-                Stay where you are if you're hurt.
-              </p>
-            </>
-          )}
-          <BigButton onClick={() => setState({ name: "watching" })}>I'm okay now — keep watching</BigButton>
-        </div>
+        state.failed ? (
+          <Status icon="alert" tone="alert" title={`We couldn't reach ${DEMO_FAMILY_CONTACT.name}`} body="Please call someone for help if you can.">
+            <BigButton onClick={() => setState({ name: "watching" })}>Back to watching</BigButton>
+          </Status>
+        ) : (
+          <Status icon="bell" tone="notice" title={`We've let ${DEMO_FAMILY_CONTACT.name} know`}
+            body={`They're getting a call and a text${USE_MOCK ? " (demo: nothing was sent)" : ""}. Stay where you are if you're hurt.`}>
+            <BigButton onClick={() => setState({ name: "watching" })}>I'm okay now</BigButton>
+          </Status>
+        )
       )}
 
       {(state.name === "off" || state.name === "watching") && log.length > 0 && <AlertLog log={log} />}
@@ -170,15 +174,45 @@ export default function WatchPage() {
   );
 }
 
+const TONES = {
+  good: "bg-good-soft text-good",
+  notice: "bg-notice-soft text-notice",
+  alert: "bg-alert-soft text-alert",
+};
+
+function Status({ icon, tone, title, body, children }: {
+  icon: "check" | "bell" | "alert"; tone: keyof typeof TONES; title: string; body?: string; children?: React.ReactNode;
+}) {
+  return (
+    <div className="card p-8 space-y-5 text-center" role="status">
+      <span className={`mx-auto grid h-20 w-20 place-items-center rounded-full ${TONES[tone]}`}>
+        <Icon name={icon} className="h-10 w-10" strokeWidth={2.4} />
+      </span>
+      <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
+      {body && <p className="text-xl leading-relaxed text-ink-2">{body}</p>}
+      {children}
+    </div>
+  );
+}
+
+function IconTile({ name, color }: { name: "shield"; color: string }) {
+  return (
+    <span className="grid h-12 w-12 shrink-0 place-items-center rounded-[14px] text-white" style={{ background: color }}>
+      <Icon name={name} className="h-7 w-7" />
+    </span>
+  );
+}
+
 function AlertLog({ log }: { log: LoggedAlert[] }) {
   return (
-    <Reveal label="See recent events" hideLabel="Hide recent events">
-      <ul className="space-y-2">
-        {[...log].reverse().slice(0, 5).map((a) => (
-          <li key={a.detectedAt} className="rounded-xl bg-white p-4 shadow-sm text-xl flex flex-wrap justify-between gap-2">
-            <span>{new Date(a.detectedAt).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" })}</span>
-            <span className={a.respondedOk ? "text-emerald-800" : "text-amber-900 font-semibold"}>
-              {a.respondedOk ? "Said they were okay" : "No answer — family contacted"}
+    <Reveal label="Recent events" hideLabel="Hide recent events">
+      <ul className="card overflow-hidden">
+        {[...log].reverse().slice(0, 5).map((a, i) => (
+          <li key={a.detectedAt} className="relative flex items-center justify-between gap-3 px-5 py-4">
+            {i > 0 && <span className="absolute top-0 left-5 right-0 border-t border-hairline" aria-hidden />}
+            <span className="text-xl">{new Date(a.detectedAt).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" })}</span>
+            <span className={`text-lg ${a.respondedOk ? "text-good" : "text-notice font-medium"}`}>
+              {a.respondedOk ? "Said they were okay" : "Family contacted"}
             </span>
           </li>
         ))}

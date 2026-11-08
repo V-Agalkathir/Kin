@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, Cell, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import Icon, { CategoryLabel } from "../components/Icon";
 import Reveal from "../components/Reveal";
 import { getCheckIns, USE_MOCK } from "../lib/api";
 import { DEMO_USER } from "../lib/demoUser";
@@ -9,14 +10,13 @@ import type { CheckIn } from "../types/checkin";
 const CHART_METRICS = ["sitToStandSec", "wpm", "avgPauseMs"] as const;
 type Metric = (typeof CHART_METRICS)[number];
 
-const dayLabel = (iso: string) => new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short" });
+const todayEyebrow = () => new Date().toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" });
 
 function whenLabel(iso: string): string {
-  const d = new Date(iso);
   const days = Math.round((new Date().setHours(0, 0, 0, 0) - new Date(iso).setHours(0, 0, 0, 0)) / 86_400_000);
-  if (days === 0) return "today";
-  if (days === 1) return "yesterday";
-  return d.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" });
+  if (days === 0) return "Today";
+  if (days === 1) return "Yesterday";
+  return new Date(iso).toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" });
 }
 
 function median(xs: number[]): number | null {
@@ -35,97 +35,108 @@ export default function DashboardPage() {
     getCheckIns(DEMO_USER.id).then(setCheckIns).catch(() => setError(true));
   }, []);
 
-  if (error) return <p className="text-2xl py-12 text-center">We couldn't load check-ins. Please refresh the page.</p>;
-  if (!checkIns) return <p className="text-2xl py-12 text-center" role="status">Loading…</p>;
-  if (!checkIns.length) return <p className="text-2xl py-12 text-center">No check-ins yet.</p>;
+  if (error) return <Empty text="We couldn't load check-ins. Please refresh the page." />;
+  if (!checkIns) return <Empty text="Loading…" />;
+  if (!checkIns.length) return <Empty text="No check-ins yet." />;
 
   const latest = checkIns[checkIns.length - 1];
   const flagged = latest.flags.length > 0;
 
   return (
-    <section className="space-y-6">
-      <article className="rounded-3xl bg-white p-8 shadow-sm space-y-4 text-center">
-        <span
-          aria-hidden
-          className={`mx-auto grid h-16 w-16 place-items-center rounded-full text-3xl ${flagged ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"}`}
-        >
-          {flagged ? "!" : "✓"}
-        </span>
-        <h1 className="text-4xl font-bold">
-          {flagged ? `Something has changed for ${DEMO_USER.name}` : `${DEMO_USER.name} is doing well`}
-        </h1>
-        <p className="text-2xl leading-relaxed text-stone-700">{latest.summaryFamily || "Check-in completed."}</p>
-        <p className="text-lg text-stone-500">Last check-in {whenLabel(latest.createdAt)}</p>
+    <section className="space-y-7">
+      <header>
+        <p className="eyebrow">{todayEyebrow()}</p>
+        <h1 className="large-title">Summary</h1>
+      </header>
+
+      <article className="card p-6 space-y-3">
+        <div className="flex items-center justify-between">
+          <CategoryLabel icon="heart" label={DEMO_USER.name} color={flagged ? "#E8890C" : "#30A46C"} />
+          <span className="text-base text-ink-3">{whenLabel(latest.createdAt)}</span>
+        </div>
+        <h2 className="text-3xl font-bold tracking-tight">{flagged ? "Something has changed" : "Doing well"}</h2>
+        <p className="text-xl leading-relaxed text-ink-2">{latest.summaryFamily || "Check-in completed."}</p>
       </article>
 
-      <Reveal label="See trends" hideLabel="Hide trends">
-        <p className="text-lg text-stone-600">
-          Compared with {DEMO_USER.name}'s own usual pattern. A change is flagged only after two check-ins in a row.
-          Kin notices changes; it doesn't diagnose.
+      <Reveal label="Show trends" hideLabel="Hide trends">
+        {CHART_METRICS.map((m) => <MetricCard key={m} metric={m} checkIns={checkIns} />)}
+        <p className="px-2 text-base text-ink-2">
+          Compared with {DEMO_USER.name}'s own usual. A change is flagged only after two check-ins in a row. Kin notices change; it doesn't diagnose.
         </p>
-        {CHART_METRICS.map((m) => <TrendChart key={m} metric={m} checkIns={checkIns} />)}
       </Reveal>
 
-      <Reveal label="See past check-ins" hideLabel="Hide past check-ins">
+      <Reveal label="Show past check-ins" hideLabel="Hide past check-ins">
         <PastCheckIns checkIns={checkIns} />
       </Reveal>
 
-      {USE_MOCK && <p className="text-center text-base text-stone-500">Demo data</p>}
+      {USE_MOCK && <p className="text-center text-base text-ink-3">Demo data</p>}
     </section>
   );
 }
 
+function Empty({ text }: { text: string }) {
+  return <p className="py-20 text-center text-xl text-ink-2" role="status">{text}</p>;
+}
+
 function PastCheckIns({ checkIns }: { checkIns: CheckIn[] }) {
   return (
-    <ul className="divide-y divide-stone-200 rounded-2xl bg-white shadow-sm">
-      {checkIns.slice(-7).reverse().map((c) => (
-        <li key={c.id} className="p-5 space-y-1">
-          <div className="flex items-baseline justify-between gap-3">
-            <span className="text-xl font-semibold capitalize">{whenLabel(c.createdAt)}</span>
-            <span className={`text-lg font-semibold ${c.flags.length ? "text-amber-800" : "text-emerald-800"}`}>
+    <ul className="card overflow-hidden">
+      {checkIns.slice(-7).reverse().map((c, i) => (
+        <li key={c.id} className="relative px-5 py-4">
+          {i > 0 && <span className="absolute top-0 left-5 right-0 border-t border-hairline" aria-hidden />}
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-xl font-medium">{whenLabel(c.createdAt)}</span>
+            <span className={`inline-flex items-center gap-2 text-lg ${c.flags.length ? "text-notice" : "text-good"}`}>
+              <Icon name={c.flags.length ? "alert" : "check"} className="h-5 w-5" strokeWidth={2.4} />
               {c.flags.length ? "Changed" : "Usual"}
             </span>
           </div>
-          {c.flags.map((f) => <p key={f.metric} className="text-lg text-stone-700">{describeFlag(f)}</p>)}
+          {c.flags.map((f) => <p key={f.metric} className="mt-1 text-base text-ink-2">{describeFlag(f)}</p>)}
         </li>
       ))}
     </ul>
   );
 }
 
-function TrendChart({ metric, checkIns }: { metric: Metric; checkIns: CheckIn[] }) {
+function MetricCard({ metric, checkIns }: { metric: Metric; checkIns: CheckIn[] }) {
   const info = METRIC_INFO[metric];
   const data = useMemo(
-    () => checkIns.map((c) => ({ day: dayLabel(c.createdAt), value: c[metric], flagged: c.flags.some((f) => f.metric === metric) })),
+    () => checkIns.slice(-14).map((c) => ({
+      day: new Date(c.createdAt).toLocaleDateString(undefined, { day: "numeric", month: "short" }),
+      value: c[metric],
+      flagged: c.flags.some((f) => f.metric === metric),
+    })),
     [checkIns, metric],
   );
+  const latest = checkIns[checkIns.length - 1];
   // "Usual" = median of the 14 check-ins before the latest, matching the baseline window.
   const usual = median(checkIns.slice(-15, -1).map((c) => c[metric]));
 
   return (
-    <figure className="rounded-2xl bg-white p-5 shadow-sm space-y-2">
-      <figcaption className="flex flex-wrap items-baseline justify-between gap-2">
-        <span className="text-2xl font-semibold">{info.label}</span>
-        <span className="text-lg text-stone-500">{info.unit}</span>
+    <figure className="card p-5 space-y-3">
+      <figcaption className="flex items-center justify-between">
+        <CategoryLabel icon={info.icon} label={info.label} color={info.color} />
+        <span className="text-base text-ink-3">Last 2 weeks</span>
       </figcaption>
-      <ResponsiveContainer width="100%" height={200}>
-        <LineChart data={data} margin={{ top: 10, right: 16, bottom: 0, left: 0 }}>
-          <CartesianGrid stroke="#e7e5e4" vertical={false} />
-          <XAxis dataKey="day" tick={{ fontSize: 16 }} interval="preserveStartEnd" minTickGap={32} />
-          <YAxis tick={{ fontSize: 16 }} width={56} domain={["auto", "auto"]} />
-          <Tooltip contentStyle={{ fontSize: 18 }} formatter={(v: number) => [`${v} ${info.unit}`, info.label]} />
-          {usual !== null && (
-            <ReferenceLine y={usual} stroke="#a8a29e" strokeDasharray="6 6" label={{ value: "usual", position: "insideTopLeft", fontSize: 16, fill: "#78716c" }} />
-          )}
-          <Line
-            dataKey="value" stroke="#0369a1" strokeWidth={3} isAnimationActive={false}
-            dot={(p: { cx?: number; cy?: number; index?: number; payload?: { flagged: boolean } }) =>
-              p.payload?.flagged
-                ? <circle key={p.index} cx={p.cx} cy={p.cy} r={7} fill="#f59e0b" stroke="#fff" strokeWidth={2} />
-                : <circle key={p.index} cx={p.cx} cy={p.cy} r={0} />}
-          />
-        </LineChart>
+      <p>
+        <span className="text-4xl font-bold tracking-tight tabular-nums">{latest[metric].toFixed(info.decimals)}</span>
+        <span className="ml-1.5 text-xl font-medium text-ink-2">{info.shortUnit}</span>
+        {usual !== null && <span className="ml-3 text-base text-ink-3">usual {usual.toFixed(info.decimals)}</span>}
+      </p>
+      <ResponsiveContainer width="100%" height={150}>
+        <BarChart data={data} margin={{ top: 6, right: 0, bottom: 0, left: 0 }} barCategoryGap="22%">
+          <XAxis dataKey="day" tick={{ fontSize: 14, fill: "#AEAEB2" }} tickLine={false} axisLine={false} interval="preserveStartEnd" minTickGap={40} />
+          <YAxis orientation="right" tick={{ fontSize: 14, fill: "#AEAEB2" }} tickLine={false} axisLine={false} width={44}
+            domain={[(min: number) => Math.floor(min * 0.85), (max: number) => Math.ceil(max * 1.02)]} allowDecimals={false} />
+          <Tooltip cursor={{ fill: "rgba(0,0,0,0.04)" }} contentStyle={{ fontSize: 16, borderRadius: 12, border: "none", boxShadow: "0 4px 16px rgba(0,0,0,.08)" }}
+            formatter={(v: number) => [`${v} ${info.shortUnit}`, info.label]} />
+          {usual !== null && <ReferenceLine y={usual} stroke="#AEAEB2" strokeDasharray="4 4" />}
+          <Bar dataKey="value" radius={[6, 6, 6, 6]} isAnimationActive={false}>
+            {data.map((d, i) => <Cell key={i} fill={info.color} fillOpacity={d.flagged ? 1 : 0.35} />)}
+          </Bar>
+        </BarChart>
       </ResponsiveContainer>
+      <p className="text-base text-ink-3">Solid bars mark check-ins that changed from usual.</p>
     </figure>
   );
 }

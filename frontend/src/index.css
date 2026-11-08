@@ -4,7 +4,19 @@
 
 /* Large base size for older adults; Tailwind sizes are rem-based, so everything scales with it. */
 html { font-size: 20px; }
-body { @apply bg-stone-50 text-stone-900 antialiased; line-height: 1.5; }
+body {
+  @apply bg-canvas text-ink antialiased;
+  line-height: 1.45;
+  font-feature-settings: "ss01", "cv11";
+  -webkit-tap-highlight-color: transparent;
+}
+
+@layer components {
+  .card { @apply bg-card rounded-card shadow-card; }
+  .large-title { @apply text-[2.1rem] leading-tight font-bold tracking-tight; }
+  .eyebrow { @apply text-base font-semibold uppercase tracking-wide text-ink-2; }
+  .focus-ring { @apply focus:outline-none focus-visible:ring-4 focus-visible:ring-accent/40; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }

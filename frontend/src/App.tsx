@@ -1,39 +1,44 @@
 import { Link, NavLink, Route, Routes } from "react-router-dom";
+import Icon from "./components/Icon";
 import CheckInPage from "./pages/CheckInPage";
 import DashboardPage from "./pages/DashboardPage";
 import WatchPage from "./pages/WatchPage";
 
 const NAV = [
-  { to: "/", label: "Check-in" },
-  { to: "/dashboard", label: "Family" },
-  { to: "/watch", label: "Watch" },
+  { to: "/", label: "Check-in", icon: "home" as const },
+  { to: "/dashboard", label: "Family", icon: "heart" as const },
+  { to: "/watch", label: "Watch", icon: "shield" as const },
 ];
 
 export default function App() {
   return (
     <>
-      <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:m-2 focus:rounded-lg focus:bg-white focus:p-3">
+      <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-2 focus:rounded-xl focus:bg-card focus:p-3">
         Skip to content
       </a>
-      <header className="bg-white border-b border-stone-200">
-        <nav className="max-w-3xl mx-auto px-4 py-3 flex flex-wrap items-center gap-2" aria-label="Main">
-          <Link to="/" className="mr-auto text-3xl font-extrabold text-sky-800 py-2">Kin</Link>
-          {NAV.map((n) => (
-            <NavLink
-              key={n.to}
-              to={n.to}
-              end
-              className={({ isActive }) =>
-                `min-h-14 px-5 py-3 rounded-xl text-xl font-semibold focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-400 ${
-                  isActive ? "bg-sky-700 text-white" : "text-sky-900 hover:bg-sky-50"
-                }`}
-            >
-              {n.label}
-            </NavLink>
-          ))}
-        </nav>
+
+      {/* Top bar: wordmark + segmented control (tablet/desktop) */}
+      <header className="sticky top-0 z-20 bg-canvas/85 backdrop-blur-xl border-b border-hairline/70">
+        <div className="max-w-2xl mx-auto px-5 h-16 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2 text-2xl font-bold tracking-tight focus-ring rounded-lg">
+            <span className="grid h-8 w-8 place-items-center rounded-[10px] bg-accent text-white">
+              <Icon name="heart" className="h-5 w-5" strokeWidth={2.4} />
+            </span>
+            Kin
+          </Link>
+          <nav aria-label="Main" className="hidden sm:flex rounded-[12px] bg-fill p-1">
+            {NAV.map((n) => (
+              <NavLink key={n.to} to={n.to} end
+                className={({ isActive }) =>
+                  `px-5 py-2 rounded-[9px] text-lg font-medium transition focus-ring ${isActive ? "bg-card text-ink shadow-card" : "text-ink-2 hover:text-ink"}`}>
+                {n.label}
+              </NavLink>
+            ))}
+          </nav>
+        </div>
       </header>
-      <main id="main" className="max-w-3xl mx-auto px-4 py-8">
+
+      <main id="main" className="max-w-2xl mx-auto px-5 pt-6 pb-32 sm:pb-12">
         <Routes>
           <Route path="/" element={<CheckInPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
@@ -41,15 +46,29 @@ export default function App() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
+
+      {/* Bottom tab bar (phones), like iOS */}
+      <nav aria-label="Main" className="sm:hidden fixed bottom-0 inset-x-0 z-20 bg-canvas/90 backdrop-blur-xl border-t border-hairline pb-[env(safe-area-inset-bottom)]">
+        <div className="grid grid-cols-3">
+          {NAV.map((n) => (
+            <NavLink key={n.to} to={n.to} end
+              className={({ isActive }) =>
+                `flex flex-col items-center gap-1 py-3 text-base font-medium focus-ring ${isActive ? "text-accent" : "text-ink-3"}`}>
+              <Icon name={n.icon} className="h-7 w-7" />
+              {n.label}
+            </NavLink>
+          ))}
+        </div>
+      </nav>
     </>
   );
 }
 
 function NotFound() {
   return (
-    <section className="space-y-6 py-12 text-center">
-      <h1 className="text-4xl font-bold">Page not found</h1>
-      <Link to="/" className="inline-block min-h-20 px-8 py-5 text-2xl font-bold rounded-2xl bg-sky-700 text-white">
+    <section className="space-y-6 py-16 text-center">
+      <h1 className="large-title">Page not found</h1>
+      <Link to="/" className="inline-block rounded-control bg-accent px-6 py-4 text-xl font-semibold text-white focus-ring">
         Go to today's check-in
       </Link>
     </section>
