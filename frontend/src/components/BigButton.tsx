@@ -1,13 +1,18 @@
 import type { ButtonHTMLAttributes } from "react";
 
-type Props = ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "primary" | "secondary" };
+type Variant = "primary" | "secondary" | "success";
+type Props = ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant };
+
+const LOOKS: Record<Variant, string> = {
+  primary: "bg-sky-700 text-white hover:bg-sky-800 active:bg-sky-900",
+  secondary: "bg-white text-sky-900 border-4 border-sky-700 hover:bg-sky-50",
+  success: "bg-emerald-700 text-white hover:bg-emerald-800 active:bg-emerald-900",
+};
 
 // Large, high-contrast button sized for older adults (well above the 44px touch minimum).
+// Use `variant` for colour; size overrides (min-h-*, text-*) can go in className.
 export default function BigButton({ variant = "primary", className = "", ...rest }: Props) {
-  const look =
-    variant === "primary"
-      ? "bg-sky-700 text-white hover:bg-sky-800 active:bg-sky-900"
-      : "bg-white text-sky-900 border-4 border-sky-700 hover:bg-sky-50";
+  const look = LOOKS[variant];
   return (
     <button
       type="button"

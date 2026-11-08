@@ -13,11 +13,22 @@ const ATTEMPTS = 2;
 const LISTEN_MS = 20_000;
 const canListen = typeof window !== "undefined" && ("SpeechRecognition" in window || "webkitSpeechRecognition" in window);
 
-/** Ask once. Without speech recognition, still speak and wait so the on-screen button can be pressed. */
+/**
+ * Ask once. Always gives the full listening window before returning "no answer": speech recognition
+ * can end early (mic blocked, network error, unsupported browser) and must not fast-track an alert
+ * before the person has had time to press the on-screen button.
+ */
 async function askOnce(): Promise<boolean> {
-  if (canListen) return voiceCheck(PROMPT, DEMO_USER.speechLang, LISTEN_MS);
-  speechSynthesis.speak(Object.assign(new SpeechSynthesisUtterance(PROMPT), { lang: DEMO_USER.speechLang }));
-  await new Promise((r) => setTimeout(r, LISTEN_MS));
+  const started = Date.now();
+  let heard = false;
+  if (canListen) {
+    heard = await voiceCheck(PROMPT, DEMO_USER.speechLang, LISTEN_MS).catch(() => false);
+  } else {
+    speechSynthesis.speak(Object.assign(new SpeechSynthesisUtterance(PROMPT), { lang: DEMO_USER.speechLang }));
+  }
+  if (heard) return true;
+  const left = LISTEN_MS - (Date.now() - started);
+  if (left > 0) await new Promise((r) => setTimeout(r, left));
   return false;
 }
 
@@ -115,7 +126,7 @@ export default function WatchPage() {
         <div className="space-y-8 text-center" role="alertdialog" aria-labelledby="ask">
           <h1 id="ask" className="text-6xl font-bold">Are you okay?</h1>
           <p className="text-3xl">Say <strong>"I'm okay"</strong> or press the button.</p>
-          <BigButton className="min-h-40 text-5xl bg-emerald-700 hover:bg-emerald-800" onClick={pressedOkay}>I'm okay</BigButton>
+          <BigButton variant="success" className="min-h-40 text-5xl" onClick={pressedOkay}>I'm okay</BigButton>
           <p className="text-xl text-stone-600" aria-live="polite">
             {canListen ? "Listening…" : "Waiting…"} (asking {state.attempt} of {ATTEMPTS}). If there's no answer we'll contact {DEMO_FAMILY_CONTACT.name}.
           </p>
