@@ -2,4 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
-body { @apply bg-stone-50 text-stone-900; font-size: 18px; }
+/* Large base size for older adults; Tailwind sizes are rem-based, so everything scales with it. */
+html { font-size: 20px; }
+body { @apply bg-stone-50 text-stone-900 antialiased; line-height: 1.5; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
